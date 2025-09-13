@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestion de Livres</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>📚 Gestion des Livres</h1>
+
+  <section>
+    <h2>Ajouter un livre</h2>
+    <form id="addBookForm">
+      <input type="text" id="title" placeholder="Titre" required>
+      <input type="text" id="author" placeholder="Auteur" required>
+      <input type="text" id="isbn" placeholder="ISBN" required>
+      <button type="submit">Ajouter</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Actions</h2>
+    <button id="listBooksBtn">Lister les livres</button>
+    <input type="text" id="bookId" placeholder="ID du livre">
+    <button id="getBookBtn">Rechercher par ID</button>
+  </section>
+
+  <section>
+    <h2>Résultats</h2>
+    <div id="results"></div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
