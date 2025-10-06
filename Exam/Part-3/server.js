@@ -9,6 +9,8 @@ const MdmOrchestrator = require('./src/core/MdmOrchestrator');
 
 const pimRoutes = require('./src/routes/pimRoutes');
 const damRoutes = require('./src/routes/damRoutes');
+const authRoutes = require('./src/routes/authRoutes');
+const { authenticate } = require('./src/middleware/auth');
 
 const app = express();
 app.use(bodyParser.json());
@@ -19,9 +21,12 @@ const productRepo = new ProductRepository(); // partagé entre PIM et DAM
 const mediaRepo = new MediaRepository();
 const mdmOrchestrator = new MdmOrchestrator(productRepo, mediaRepo);
 
-// Passer ces instances partagées aux routes
-app.use('/api/pim', pimRoutes(productRepo));
-app.use('/api/dam', damRoutes(mediaRepo, mdmOrchestrator));
+// Routes publiques
+app.use('/api/auth', authRoutes);
+
+// Routes protégées
+app.use('/api/pim', authenticate, pimRoutes(productRepo));
+app.use('/api/dam', authenticate, damRoutes(mediaRepo, mdmOrchestrator));
 
 app.listen(3000, () => {
     console.log('MDM API running on http://localhost:3000');
