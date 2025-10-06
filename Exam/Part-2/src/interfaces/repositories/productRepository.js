@@ -1,4 +1,4 @@
-class InMemoryProductRepository {
+class ProductRepository {
     constructor() {
         this.products = new Map(); // clé : ean, valeur : product object
     }
@@ -17,4 +17,4 @@ class InMemoryProductRepository {
     }
 }
 
-module.exports = InMemoryProductRepository;
+module.exports = ProductRepository;

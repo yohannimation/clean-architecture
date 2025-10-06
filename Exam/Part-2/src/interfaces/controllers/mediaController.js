@@ -21,6 +21,15 @@ function MediaController(mediaUseCases, fileStorage) {
         }
     });
 
+    router.get('/', async (req, res) => {
+        try {
+            const mediaList = await mediaUseCases.getAllMedia();
+            res.json(mediaList);
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
+
     return router;
 }
 

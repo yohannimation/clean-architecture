@@ -13,6 +13,10 @@ class MediaUseCases {
         return this.mediaRepository.save(media);
     }
 
+    async getAllMedia() {
+        return this.mediaRepository.findAll();
+    }
+
     getType(filename) {
         if (filename.endsWith(".jpg") || filename.endsWith(".png")) return "image";
         if (filename.endsWith(".mp4")) return "video";
