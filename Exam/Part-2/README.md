@@ -2,96 +2,89 @@
 
 ## Diagram
 
-graph TD
-    A[Interfaces / API] --> B[Use Cases / Services]
-    B --> C[Repositories / Infra]
-    C --> D[Stockage / FileSystem]
+            ┌─────────────────────────────┐
+            │        Framework/Drivers     │
+            │ (Express, Multer, REST API) │
+            └─────────────┬──────────────┘
+                          │
+        ┌─────────────────┴──────────────────┐
+        │               Controllers/Routes    │
+        │ - pimRoutes.js                     │
+        │ - damRoutes.js                     │
+        └─────────────┬──────────────┬───────┘
+                      │              │
+          ┌───────────┘              └───────────┐
+          │                                     │
+  ┌───────▼─────────┐                 ┌─────────▼─────────┐
+  │   Use Cases /    │                 │    Use Cases /     │
+  │   Interactors    │                 │    Interactors     │
+  │ - CreateProduct  │                 │ - UploadMedia      │
+  │ - UpdateProduct  │                 │ - LinkMediaToProduct│
+  │ - DeleteProduct  │                 └─────────┬─────────┘
+  └─────────┬────────┘                           │
+            │                                    │
+      ┌─────▼───────────┐                 ┌─────▼───────────┐
+      │   Entities       │                 │   Entities       │
+      │ - Product        │                 │ - Media          │
+      │ - Typology       │                 │ - FormatMedia    │
+      │ - FormDefinition │                 │ - LienProduitMedia│
+      └─────┬───────────┘                 └─────────────────┘
+            │
+            │
+      ┌─────▼───────────┐
+      │ Repositories     │
+      │ - ProductRepo    │
+      │ - MediaRepo      │
+      └─────────────────┘
 
-    subgraph Interfaces / API
-        A1[productController]
-        A2[mediaController]
-    end
-
-    subgraph Use Cases / Services
-        B1[ProductUseCases]
-        B2[MediaUseCases]
-    end
-
-    subgraph Repositories / Infra
-        C1[ProductRepository (Map)]
-        C2[MediaRepository (List)]
-        C3[LocalFileStorage]
-    end
-
-    subgraph Stockage / FS
-        D1[uploads/]
-    end
-
-Flux typique pour DAM → PIM :
-
-- Upload fichier via mediaController.
-- Use case linkMediaToProduct extrait EAN et SKU du nom du fichier.
-- Cherche le produit correspondant via ProductRepository.
-- Associe le média au produit dans MediaRepository (lié par EAN/SKU).
-- Données stockées dans le repository mémoire (ou futur DB).
 
 ## Entités métier principales
 
-| Entité   | Description                             | Champs principaux                              |
-|----------|-----------------------------------------|------------------------------------------------|
-| Product  | Représente un produit dans le PIM       | `ean`, `sku`, `name`, `type`, `attributes`     |
-| Typology | Définition de la typologie d'un produit | `name`, `fields` (attributs dynamique)         |
-| Media    | Média associé à un produit              | `filename`, `productEAN`, `productSKU`, `type` |
+- Product : représente un produit avec EAN, SKU, nom, typologie, attributs dynamiques.
+- Typology : définit les champs dynamiques par type de produit (ex. textile → taille, couleur).
+- FormDefinition : génère dynamiquement le formulaire d’un produit selon sa typologie.
+- Media : représente un média (photo, vidéo, PDF) associé à un produit via EAN/SKU.
+- LienProduitMedia : relation entre un média et un produit.
 
 ## Circulation des données PIM ↔ DAM
 
-- Le DAM dépend des identifiants produits (EAN/SKU) pour lier un média.
-- Le PIM reste indépendant du DAM.
-- L’association se fait dans le use case du DAM, pas dans le PIM.
-
-`Client upload → mediaController → mediaUseCases.linkMediaToProduct() → mediaRepository.save() et association au ProductRepository via EAN/SKU`
+- Création d’un produit dans le PIM via `POST /api/pim/products`.
+- Upload d’un fichier dans le DAM via `POST /api/dam/upload`.
+- Orchestrateur MDM Core : lit le nom du fichier (`EAN12345_SKU56789_front.png`), parse EAN/SKU et lie le média au produit via `ProductRepository` et `MediaRepository`.
+- Produit et média peuvent ensuite être récupérés via leurs endpoints (`GET /api/pim/products/:ean/:sku`, `GET /api/dam/medias/:ean/:sku`).
 
 # C2. Justification des choix
 
 ## Application des principes DIP et OCP
 
-- DIP (Dependency Inversion Principle) :
-    - Les Use Cases dépendent d’interfaces/abstractions (productRepository, mediaRepository) plutôt que des implémentations concrètes.
-    - Le DAM ne connaît pas la structure interne du PIM, juste l’interface findByEAN.
+- DIP (Dependency Inversion Principle) : Les Use Cases (`CreateProduct`, `UploadMedia`) dépendent d’interfaces abstraites (ProductRepository, MediaRepository), pas des implémentations concrètes.
+
 - OCP (Open/Closed Principle) :
-    - Ajout de nouveaux formats de média : on peut créer un nouveau MediaType ou un nouveau parseur sans modifier le code existant.
-    - Ajout de nouveaux types de produit : la typologie est dynamique (fields) → pas besoin de toucher les use cases.
+    - Nouveaux types de produits → créer un nouvel objet `Typology` avec ses champs dynamiques.
+    - Nouveaux formats de médias → aucune modification nécessaire dans le code existant (Multer accepte dynamiquement les fichiers).
 
 ## Éviter les cycles de dépendance (ADP)
 
-- Le PIM ne dépend pas du DAM.
-- Le DAM peut interroger le PIM via l’interface productRepository (abstraction).
-- Pas de cycles, respect de l’Acyclic Dependency Principle.
+- DAM ne dépend jamais directement de PIM.
+- Liaison produit–média gérée via MDM Core (MdmOrchestrator) qui connaît les interfaces (IProductService, IMediaLinkService).
 
 ## Parties testables avec des mocks
 
-| Partie               | Comment tester                                                           |
-| -------------------- | ------------------------------------------------------------------------ |
-| MediaUseCases        | Mock `productRepository` pour simuler l’existence d’un produit           |
-| ProductUseCases      | Mock `mediaRepository` si on veut tester l’association des médias        |
-| Validation typologie | Mock typologies pour vérifier que les attributs dynamiques sont corrects |
-| Controllers          | Mock use cases pour tester endpoints sans toucher aux données physiques  |
+- Tests unitaires des Use Cases PIM : mock de ProductRepository pour simuler la persistance.
+- Tests unitaires DAM : mock de MediaRepository et ProductRepository pour tester l’association média–produit sans toucher aux fichiers physiques.
 
 # C3. Découpage en composants
 
 ## Proposition de découpage
 
-| Module       | Responsabilité                              | Contenu                                                                            |
-| ------------ | ------------------------------------------- | ---------------------------------------------------------------------------------- |
-| **PIM**      | Gestion produits et typologies              | `ProductController`, `ProductUseCases`, `ProductRepository`                        |
-| **DAM**      | Gestion médias et association produit-média | `MediaController`, `MediaUseCases`, `MediaRepository`, `LocalFileStorage`          |
-| **MDM Core** | Règles communes et validations              | Validation typologies, gestion des IDs uniques (EAN/SKU), règles métiers partagées |
+| Module       | Responsabilité principale                                                     | Cohésion/Couplage                                                        |
+| ------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **PIM**      | Gestion produits et typologies, formulaires dynamiques                        | Haute cohésion (REP, CCP), faible couplage (ADP respecté via interfaces) |
+| **DAM**      | Gestion des médias et association automatique produit–média                   | Haute cohésion, utilise MDM Core pour éviter dépendance directe au PIM   |
+| **MDM Core** | Orchestration et règles communes (liaison produit–média, suppression cascade) | Centrale pour éviter couplage direct PIM↔DAM, respecte DIP et OCP        |
+
 
 ## Justification via principes de cohésion et couplage
 
-- Cohésion :
-    - REP : chaque module a un seul but (PIM → produits, DAM → médias)
-    - CRP/CCP : les fonctionnalités sont regroupées selon leur responsabilité
-- Couplage :
-    - ADP : PIM ↛ DAM, DAM → PIM via interface productRepository (pas de cycles)
-    - SDP/SAP : utilisation d’abstractions pour limiter les dépendances et permettre l’évolution
+- Cohésion : chaque module a une responsabilité unique (PIM → produits, DAM → médias, MDM Core → orchestration), regroupant les éléments qui changent pour la même raison et pouvant être réutilisés indépendamment.
+- Couplage : les modules sont faiblement couplés grâce aux interfaces et à MDM Core (pas de dépendance directe PIM↔DAM), respectant DIP et évitant les cycles.
