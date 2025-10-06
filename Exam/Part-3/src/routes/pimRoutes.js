@@ -11,6 +11,14 @@ module.exports = (productRepo) => {
     const updateProduct = new UpdateProductUseCase(productRepo);
     const deleteProduct = new DeleteProductUseCase(productRepo);
 
+    router.get('/products', (req, res) => res.json(productRepo.findAll()));
+
+    router.get('/products/:ean/:sku', (req, res) => {
+        const product = productRepo.findByEanSku(req.params.ean, req.params.sku);
+        if (!product) return res.status(404).json({ message: 'Produit non trouvé' });
+        res.json(product);
+    });
+
     // Create
     router.post('/products', (req, res) => {
         const product = createProduct.execute(req.body);

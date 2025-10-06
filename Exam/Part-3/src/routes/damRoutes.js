@@ -1,4 +1,6 @@
 // routes/damRoutes.js
+const path = require('path');
+const fs = require('fs'); // déjà nécessaire pour supprimer le fichier
 const express = require('express');
 const multer = require('multer');
 const UploadMediaUseCase = require('../usecases/UploadMediaUseCase');
@@ -30,6 +32,19 @@ module.exports = (mediaRepo, mdmOrchestrator) => {
     router.get('/medias/:ean/:sku', (req, res) => {
         const medias = mediaRepo.findByEanSku(req.params.ean, req.params.sku);
         res.json(medias);
+    });
+
+    router.delete('/medias/:filename', (req, res) => {
+        const { filename } = req.params;
+    
+        mediaRepo.medias = mediaRepo.medias.filter(m => m.filename !== filename);
+    
+        const filePath = path.join(__dirname, '../../uploads', filename);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+    
+        res.json({ message: `Média ${filename} supprimé` });
     });
 
     return router;

@@ -10,7 +10,6 @@ class UploadMediaUseCase {
     async execute(file) {
         const { ean, sku } = this.parseFilename(file.originalname);        
         const media = new Media({ filename: file.filename, format: file.mimetype, ean, sku });
-        await this.mediaRepository.save(media);
         // association automatique avec le produit
         await this.mdmOrchestrator.linkMediaToProduct(media);
         return media;
