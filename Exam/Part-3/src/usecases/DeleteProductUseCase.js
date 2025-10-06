@@ -1,13 +1,11 @@
-// usecases/DeleteProductUseCase.js
 class DeleteProductUseCase {
     constructor(productRepository) {
         this.productRepository = productRepository;
     }
 
     execute(ean, sku) {
-        const success = this.productRepository.delete(ean, sku);
-        if (!success) throw new Error('Produit non trouvé');
-        return { message: 'Produit supprimé avec succès' };
+        const deletedProduct = this.productRepository.delete(ean, sku); // <-- retourner le produit supprimé
+        return deletedProduct;
     }
 }
 
