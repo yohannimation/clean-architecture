@@ -15,6 +15,8 @@ npm run start
 
 Base URL : `http://localhost:3000/api`
 
+- [POST]   `/auth/login`                 → génère un JWT
+
 - [POST]   `/pim/products`               → créer un produit
 - [GET]    `/pim/products`               → récupérer tous les produits
 - [GET]    `/pim/products/:ean/:sku`     → récupérer un produit spécifique
@@ -24,6 +26,28 @@ Base URL : `http://localhost:3000/api`
 - [POST]   `/dam/upload`                 → uploader un fichier média
 - [GET]    `/dam/medias`                 → récupérer tous les médias
 - [DELETE] `/dam/medias/:filename`       → supprimer un média
+
+## Authentification
+
+Le système utilise JWT (JSON Web Token) pour authentifier les utilisateurs.
+
+### Connexion
+
+- Endpoint : [POST] `/auth/login`
+- Body (JSON) :
+```
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+### Exemple d’utilisation du token
+
+Pour accéder à toutes les routes protégées par le middleware, ajoutez le token dans le header :
+```
+Authorization: Bearer <JWT_TOKEN>
+```
 
 ## PIM (Product Information Management)
 
@@ -97,3 +121,16 @@ c) Supprimer un média
 
 - Endpoint : [DELETE] `/dam/medias/:filename`
 - Exemple : DELETE `/dam/medias/EAN12345_SKU56789_front.png`
+
+## Tests
+
+Lancer tous les tests :
+```
+npm test
+```
+
+Tests disponibles :
+
+- PIM : création, mise à jour, suppression de produit
+- DAM : upload et liaison automatique d’un média
+- Auth : connexion, génération de token et vérification de routes protégées
