@@ -2,7 +2,7 @@ const ProductRepository = require('../repositories/ProductRepository');
 const CreateProductUseCase = require('../usecases/CreateProductUseCase');
 const UpdateProductUseCase = require('../usecases/UpdateProductUseCase');
 const DeleteProductUseCase = require('../usecases/DeleteProductUseCase');
-const Typology = require('../entities/Typology'); // ok avec module.exports = Typology
+const Typology = require('../entities/Typology');
 
 
 describe('PIM Use Cases', () => {

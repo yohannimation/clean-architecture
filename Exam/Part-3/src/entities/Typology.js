@@ -1,4 +1,3 @@
-// Typology.js
 class Typology {
     constructor({ name, dynamicFields = [] }) {
         this.name = name;
@@ -6,4 +5,4 @@ class Typology {
     }
 }
 
-module.exports = Typology; // <-- utiliser directement Typology
+module.exports = Typology;

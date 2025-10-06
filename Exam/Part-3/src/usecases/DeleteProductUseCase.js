@@ -4,7 +4,7 @@ class DeleteProductUseCase {
     }
 
     execute(ean, sku) {
-        const deletedProduct = this.productRepository.delete(ean, sku); // <-- retourner le produit supprimé
+        const deletedProduct = this.productRepository.delete(ean, sku);
         return deletedProduct;
     }
 }

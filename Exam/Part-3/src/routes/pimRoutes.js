@@ -1,4 +1,3 @@
-// pimRoutes.js
 const express = require('express');
 const CreateProductUseCase = require('../usecases/CreateProductUseCase');
 const UpdateProductUseCase = require('../usecases/UpdateProductUseCase');
@@ -19,13 +18,11 @@ module.exports = (productRepo) => {
         res.json(product);
     });
 
-    // Create
     router.post('/products', (req, res) => {
         const product = createProduct.execute(req.body);
         res.status(201).json(product);
     });
 
-    // Update
     router.put('/products/:ean/:sku', (req, res) => {
         try {
             const updated = updateProduct.execute({

@@ -1,4 +1,3 @@
-// repositories/MediaRepository.js
 class MediaRepository {
     constructor() {
         this.medias = [];

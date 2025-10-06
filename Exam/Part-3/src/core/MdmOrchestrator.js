@@ -16,9 +16,10 @@ class MdmOrchestrator {
         this.productRepository.update(product);
 
         // Sauvegarder le média dans le repository
-        this.mediaRepository.save(media); // <-- ici save(), pas add()
+        this.mediaRepository.save(media);
 
-        return media; // retourner le média pour les tests
+        // retourner le média pour les tests
+        return media;
     }
 }
 

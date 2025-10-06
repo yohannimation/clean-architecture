@@ -1,16 +1,14 @@
-// usecases/UploadMediaUseCase.js
 const Media = require('../entities/Media');
 
 class UploadMediaUseCase {
     constructor(mediaRepository, mdmOrchestrator) {
         this.mediaRepository = mediaRepository;
-        this.mdmOrchestrator = mdmOrchestrator; // pour associer produit
+        this.mdmOrchestrator = mdmOrchestrator;
     }
 
     async execute(file) {
         const { ean, sku } = this.parseFilename(file.originalname);        
         const media = new Media({ filename: file.filename, format: file.mimetype, ean, sku });
-        // association automatique avec le produit
         await this.mdmOrchestrator.linkMediaToProduct(media);
         return media;
     }

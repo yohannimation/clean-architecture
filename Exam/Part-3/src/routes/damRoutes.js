@@ -1,6 +1,5 @@
-// routes/damRoutes.js
 const path = require('path');
-const fs = require('fs'); // déjà nécessaire pour supprimer le fichier
+const fs = require('fs');
 const express = require('express');
 const multer = require('multer');
 const UploadMediaUseCase = require('../usecases/UploadMediaUseCase');
