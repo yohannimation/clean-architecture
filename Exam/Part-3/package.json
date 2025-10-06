@@ -3,11 +3,11 @@
     "version": "1.0.0",
     "main": "api/server.js",
     "scripts": {
-      "start": "node server.js",
-      "test": "node tests/testCreateProduct.js"
+        "start": "node server.js",
+        "test": "node tests/testCreateProduct.js"
     },
     "dependencies": {
-      "express": "^4.18.2"
+        "express": "^4.18.2",
+        "multer": "^2.0.2"
     }
-  }
-  
+}

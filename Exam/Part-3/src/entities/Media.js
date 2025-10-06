@@ -1,3 +1,4 @@
+// entities/Media.js
 class Media {
     constructor({ filename, format, ean, sku }) {
         this.filename = filename;
@@ -6,3 +7,5 @@ class Media {
         this.sku = sku;
     }
 }
+
+module.exports = Media;
